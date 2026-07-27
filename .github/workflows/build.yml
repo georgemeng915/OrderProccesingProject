@@ -18,7 +18,7 @@ jobs:
       # 2. Spin up your infrastructure using your existing compose file
       - name: Start Postgres and Kafka
         # We explicitly list 'postgres' and 'kafka' so it doesn't try to start your frontend/app yet
-        run: docker-compose up -d postgres kafka
+        run: docker compose up -d postgres kafka
 
       # 3. Wait for the containers to fully boot up
       - name: Wait for services to be ready
