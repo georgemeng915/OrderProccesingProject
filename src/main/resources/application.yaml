@@ -1,15 +1,15 @@
 server:
-    port: 8080
+  port: 8080
 
 spring:
   application:
     name: order-service
 
   datasource:
-      url: jdbc:postgresql://localhost:5432/orderdb
-      username: postgres
-      password: postgres
-      driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/orderdb
+    username: postgres
+    password: secretpassword
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
@@ -19,12 +19,11 @@ spring:
   kafka:
     bootstrap-servers: localhost:9092
     producer:
-        key-serializer: org.apache.kafka.common.serialization.StringSerializer
-        value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     consumer:
       group-id: order-processor-group
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "com.example.orderprocessingproject.dto"
-
