@@ -1,0 +1,41 @@
+name: Full Stack CI Build
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Pull your code onto the GitHub runner
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Spin up your infrastructure using your existing compose file
+      - name: Start Postgres and Kafka
+        # We explicitly list 'postgres' and 'kafka' so it doesn't try to start your frontend/app yet
+        run: docker-compose up -d postgres kafka
+
+      # 3. Wait for the containers to fully boot up
+      - name: Wait for services to be ready
+        # Kafka takes a few seconds to start accepting connections
+        run: sleep 15
+
+      # 4. Install Java on the GitHub runner
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17' # Change this if you are using Java 21
+          distribution: 'temurin'
+
+      # 5. Make sure the Gradle wrapper is executable
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # 6. Run the build (which will now successfully execute the tests!)
+      - name: Build and Test with Gradle
+        run: ./gradlew build
