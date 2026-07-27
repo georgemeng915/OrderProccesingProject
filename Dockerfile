@@ -1,22 +1,25 @@
-# Use a lightweight official Java runtime as a parent image
-FROM eclipse-temurin:17-jdk-alpine
-
-# Set the working directory inside the container
+# Stage 1: Build the application using Gradle
+FROM eclipse-temurin:17-jdk AS build
 WORKDIR /app
 
-# Copy the Maven wrapper files and pom.xml first to cache dependencies
-COPY mvnw .
-COPY .mvn .mvn
-COPY pom.xml .
+# Copy gradle wrapper and build files
+COPY gradlew ./
+COPY gradle gradle/
+COPY build.gradle settings.gradle ./
 
-# Download dependencies (this layer will be cached if pom.xml doesn't change)
-RUN ./mvnw dependency:go-offline -B
+# Download dependencies (cached if dependencies don't change)
+RUN ./gradlew dependencies --no-daemon
 
-# Copy the rest of your source code
+# Copy source code and build the fat jar
 COPY src src
+RUN ./gradlew bootJar --no-daemon
 
-# Build the application jar file
-RUN ./mvnw package -DskipTests
+# Stage 2: Run the application
+FROM eclipse-temurin:17-jdk
+WORKDIR /app
 
-# Run the jar file (finds the built jar dynamically)
-ENTRYPOINT ["sh", "-c", "java -jar target/*.jar"]
+# Copy the built jar from the build stage
+COPY --from=build /app/build/libs/*.jar app.jar
+
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]

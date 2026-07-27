@@ -6,6 +6,7 @@ import com.example.orderprocessingproject.entity.OrderRepository;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -41,5 +42,9 @@ public class OrderService {
         kafkaTemplate.send(TOPIC, event.getOrderId(), event);
 
         return savedOrder;
+    }
+
+    public List<Order> getAllOrders() {
+        return orderRepository.findAll();
     }
 }
