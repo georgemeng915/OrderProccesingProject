@@ -1,0 +1,76 @@
+name: E2E Tests with Kubernetes and Playwright
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  e2e-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 1. Set up Kind Cluster
+      - name: Set up Kind Cluster
+        uses: helm/kind-action@v1.9.0
+
+      - name: Check Cluster status
+        run: |
+          kubectl cluster-info
+          kubectl get nodes
+
+      # 2. Build and Load Frontend Image into Kind
+      - name: Build Frontend Docker image
+        run: |
+          docker build -t orderproccesing-frontend:latest ./frontend
+
+      - name: Load image into Kind
+        run: |
+          kind load docker-image orderproccesing-frontend:latest
+
+      # 3. Deploy App to Kubernetes
+      - name: Apply K8s Manifests
+        run: |
+          kubectl apply -f k8s/
+
+      - name: Wait for Frontend deployment
+        run: |
+          kubectl rollout status deployment/frontend --timeout=120s
+
+      # 4. Set up Node & Playwright Dependencies
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        working-directory: ./frontend
+        run: npx playwright install --with-deps
+
+      # 5. Port-Forward and Run Playwright Tests
+      - name: Port-forward Frontend service
+        run: |
+          kubectl port-forward svc/frontend-service 8080:80 &
+          sleep 3
+
+      - name: Run Playwright E2E Tests
+        working-directory: ./frontend
+        run: npx playwright test
+        env:
+          BASE_URL: http://localhost:8080
+
+      # 6. Upload Test Artifacts on Failure
+      - name: Upload Playwright Report
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 30
