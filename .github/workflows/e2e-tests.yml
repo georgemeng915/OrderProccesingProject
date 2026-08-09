@@ -24,7 +24,7 @@ jobs:
           java-version: '17'
 
       - name: Run SonarQube Analysis via Gradle
-        run: ./gradlew sonar --info
+        run: ./gradlew sonar --no-daemon --info
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
