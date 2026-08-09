@@ -13,9 +13,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 1. Set up Kind Cluster
+      # 1. Set up Kind Cluster with explicit name
       - name: Set up Kind Cluster
         uses: helm/kind-action@v1.9.0
+        with:
+          cluster_name: kind
 
       - name: Check Cluster status
         run: |
@@ -29,7 +31,7 @@ jobs:
 
       - name: Load image into Kind
         run: |
-          kind load docker-image orderproccesing-frontend:latest
+          kind load docker-image orderproccesing-frontend:latest --name kind
 
       # 3. Deploy App to Kubernetes
       - name: Apply K8s Manifests
