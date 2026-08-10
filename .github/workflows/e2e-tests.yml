@@ -21,7 +21,10 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@v5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: https://sonarcloud.io # Omit if using self-hosted server url, or set accordingly
+        with:
+          args: >
+            -Dsonar.organization=georgemeng915
+            -Dsonar.projectKey=georgemeng915_OrderProccesingProject
 
   # Job 2: Kubernetes Kind & Playwright E2E Tests
   e2e-test:
