@@ -51,3 +51,10 @@ tasks.named('clean') {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+sonar {
+    properties {
+        property "sonar.projectKey", "georgemeng915_OrderProccesingProject"
+        property "sonar.host.url", "https://sonarcloud.io"
+    }
+}
